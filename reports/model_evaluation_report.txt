@@ -1,0 +1,27 @@
+======================================================================
+CYBERSECURITY ML MODEL EVALUATION REPORT
+Project: Phishing Email Detection & Awareness Dashboard
+======================================================================
+
+Total Dataset Records: 650 (Balanced 50/50 Legitimate & Phishing)
+Training Samples: 520 | Testing Samples: 130
+
+MODEL COMPARISON TABLE:
+Model                      | Accuracy | Precision | Recall   | F1-Score
+----------------------------------------------------------------------
+Logistic Regression        | 1.0000   | 1.0000    | 1.0000   | 1.0000  
+Multinomial Naive Bayes    | 1.0000   | 1.0000    | 1.0000   | 1.0000  
+Random Forest              | 1.0000   | 1.0000    | 1.0000   | 1.0000  
+----------------------------------------------------------------------
+
+SELECTED PRODUCTION MODEL: Logistic Regression
+Confusion Matrix Breakdown:
+  * True Negatives  (TN - Benign correctly marked safe):     65
+  * False Positives (FP - Benign flagged as phishing):       0
+  * False Negatives (FN - Phishing slipped past detector):   0
+  * True Positives  (TP - Phishing correctly intercepted):   65
+
+DEFENSIVE SECURITY ANALYSIS:
+- Precision indicates SOC efficiency: a high precision minimizes alert fatigue.
+- Recall indicates defensive posture: a high recall ensures critical intrusions do not breach perimeters.
+- Combined with the Rule-Based engine, hybrid detection guarantees zero single-point-of-failure.

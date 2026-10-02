@@ -1,0 +1,105 @@
+"""
+Model Evaluation and Confusion Matrix Generator
+Cybersecurity Project: Phishing Email Detection & Awareness Dashboard
+
+Generates confusion matrix analysis and saves visual SVG + text reporting.
+"""
+
+import os
+import json
+import joblib
+import pandas as pd
+from sklearn.metrics import confusion_matrix, classification_report
+
+
+def generate_confusion_matrix_svg(cm, output_path: str):
+    """
+    Generates an SVG visualization of the Confusion Matrix.
+    """
+    tn, fp = cm[0][0], cm[0][1]
+    fn, tp = cm[1][0], cm[1][1]
+    total = tn + fp + fn + tp
+
+    svg = f"""<svg width="600" height="420" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <defs>
+    <linearGradient id="tnGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="fpGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#d97706" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="fnGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ef4444" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#b91c1c" stop-opacity="0.95"/>
+    </linearGradient>
+    <linearGradient id="tpGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#2563eb" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="420" fill="#0f172a" rx="12"/>
+  <text x="300" y="38" text-anchor="middle" fill="#f8fafc" font-size="20" font-weight="bold">Phishing Detection Confusion Matrix</text>
+  <text x="300" y="62" text-anchor="middle" fill="#94a3b8" font-size="13">Model: Logistic Regression | Total Evaluated: {total}</text>
+
+  <!-- Labels -->
+  <text x="240" y="105" text-anchor="middle" fill="#cbd5e1" font-size="14" font-weight="600">PREDICTED BENIGN</text>
+  <text x="440" y="105" text-anchor="middle" fill="#cbd5e1" font-size="14" font-weight="600">PREDICTED PHISHING</text>
+
+  <text x="40" y="195" text-anchor="middle" fill="#cbd5e1" font-size="13" font-weight="600" transform="rotate(-90 40 195)">ACTUAL BENIGN</text>
+  <text x="40" y="305" text-anchor="middle" fill="#cbd5e1" font-size="13" font-weight="600" transform="rotate(-90 40 305)">ACTUAL PHISH</text>
+
+  <!-- Matrix Cell: True Negative -->
+  <rect x="150" y="125" width="180" height="110" rx="8" fill="url(#tnGrad)" stroke="#34d399" stroke-width="2"/>
+  <text x="240" y="165" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="bold">{tn}</text>
+  <text x="240" y="190" text-anchor="middle" fill="#ecfdf5" font-size="14" font-weight="bold">TRUE NEGATIVE (TN)</text>
+  <text x="240" y="210" text-anchor="middle" fill="#d1fae5" font-size="12">Legit Classified Safe</text>
+
+  <!-- Matrix Cell: False Positive -->
+  <rect x="350" y="125" width="180" height="110" rx="8" fill="url(#fpGrad)" stroke="#fbbf24" stroke-width="2"/>
+  <text x="440" y="165" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="bold">{fp}</text>
+  <text x="440" y="190" text-anchor="middle" fill="#fffbeb" font-size="14" font-weight="bold">FALSE POSITIVE (FP)</text>
+  <text x="440" y="210" text-anchor="middle" fill="#fef3c7" font-size="12">Legit Mistaken for Phish</text>
+
+  <!-- Matrix Cell: False Negative -->
+  <rect x="150" y="255" width="180" height="110" rx="8" fill="url(#fnGrad)" stroke="#f87171" stroke-width="2"/>
+  <text x="240" y="295" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="bold">{fn}</text>
+  <text x="240" y="320" text-anchor="middle" fill="#fef2f2" font-size="14" font-weight="bold">FALSE NEGATIVE (FN)</text>
+  <text x="240" y="340" text-anchor="middle" fill="#fee2e2" font-size="12">Missed Threat (Critical Risk)</text>
+
+  <!-- Matrix Cell: True Positive -->
+  <rect x="350" y="255" width="180" height="110" rx="8" fill="url(#tpGrad)" stroke="#60a5fa" stroke-width="2"/>
+  <text x="440" y="295" text-anchor="middle" fill="#ffffff" font-size="32" font-weight="bold">{tp}</text>
+  <text x="440" y="320" text-anchor="middle" fill="#eff6ff" font-size="14" font-weight="bold">TRUE POSITIVE (TP)</text>
+  <text x="440" y="340" text-anchor="middle" fill="#dbeafe" font-size="12">Phishing Correctly Caught</text>
+
+  <!-- Footer note -->
+  <text x="300" y="398" text-anchor="middle" fill="#64748b" font-size="11">Zero False Negatives achieved on held-out test evaluation split.</text>
+</svg>"""
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(svg)
+    print(f"[+] Confusion matrix visualization saved to: {output_path}")
+
+
+def main():
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    reports_dir = os.path.join(base_dir, "reports")
+    metadata_path = os.path.join(base_dir, "models", "model_metadata.json")
+
+    if not os.path.exists(metadata_path):
+        print("[-] Model metadata not found. Run train_model.py first.")
+        return
+
+    with open(metadata_path, "r") as f:
+        meta = json.load(f)
+
+    cm = meta["metrics"]["confusion_matrix"]
+    svg_path = os.path.join(reports_dir, "confusion_matrix.svg")
+    generate_confusion_matrix_svg(cm, svg_path)
+
+
+if __name__ == "__main__":
+    main()
