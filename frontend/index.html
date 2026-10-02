@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phishing Email Detection &amp; Awareness Dashboard</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for Interactive Security Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header / Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <div class="brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="brand-text">
+        <h1>SENTINEL<span>PHISH</span></h1>
+        <p>Phishing Email Detection &amp; Awareness Platform</p>
+      </div>
+    </div>
+    <div class="nav-status">
+      <span class="badge-soc"><i class="fa-solid fa-satellite-dish"></i> SOC DEFENSIVE ENGINE</span>
+      <span class="badge-mode" id="hybridStatusBadge"><i class="fa-solid fa-brain"></i> HYBRID: RULES + ML</span>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="tab-analyzer"><i class="fa-solid fa-envelope-open-text"></i> Live Email Analyzer</button>
+    <button class="tab-btn" data-tab="tab-dashboard"><i class="fa-solid fa-chart-line"></i> Security Analytics</button>
+    <button class="tab-btn" data-tab="tab-awareness"><i class="fa-solid fa-graduation-cap"></i> Phishing Awareness Hub</button>
+    <button class="tab-btn" data-tab="tab-history"><i class="fa-solid fa-clock-rotate-left"></i> Threat History Log</button>
+  </nav>
+
+  <main class="main-container">
+
+    <!-- ==================== TAB 1: LIVE EMAIL ANALYZER ==================== -->
+    <section id="tab-analyzer" class="tab-content active">
+      <div class="analyzer-grid">
+
+        <!-- Input Column -->
+        <div class="card card-input">
+          <div class="card-header">
+            <h2><i class="fa-solid fa-magnifying-glass-arrow-right"></i> Ingest &amp; Triage Email</h2>
+            <span class="card-tag">Static Defensive Triage</span>
+          </div>
+
+          <!-- Quick Load Sample Presets -->
+          <div class="preset-section">
+            <span class="preset-label">Load Safe Demo Scenarios:</span>
+            <div class="preset-buttons">
+              <button type="button" class="btn-preset phish" onclick="loadSamplePreset(0)"><i class="fa-solid fa-triangle-exclamation"></i> Urgent Account Phish</button>
+              <button type="button" class="btn-preset phish" onclick="loadSamplePreset(1)"><i class="fa-solid fa-file-invoice-dollar"></i> Fake Invoice (.pdf.exe)</button>
+              <button type="button" class="btn-preset phish" onclick="loadSamplePreset(2)"><i class="fa-solid fa-user-tie"></i> CEO Fraud / Wire Transfer</button>
+              <button type="button" class="btn-preset legit" onclick="loadSamplePreset(3)"><i class="fa-solid fa-circle-check"></i> Legit Workshop Notice</button>
+            </div>
+          </div>
+
+          <form id="emailAnalyzeForm">
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="senderInput"><i class="fa-solid fa-user-secret"></i> Sender Address / Header</label>
+                <input type="text" id="senderInput" placeholder='"Security Desk" &lt;alert@account-check.invalid.test&gt;' autocomplete="off">
+              </div>
+              <div class="form-group flex-1">
+                <label for="expectedOrgInput"><i class="fa-solid fa-building"></i> Expected Org (Optional)</label>
+                <input type="text" id="expectedOrgInput" placeholder="e.g. Microsoft, PayPal" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="subjectInput"><i class="fa-solid fa-heading"></i> Subject Line</label>
+              <input type="text" id="subjectInput" placeholder="e.g. URGENT: Verify Your Account Credentials Immediately" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+              <label for="bodyInput"><i class="fa-solid fa-align-left"></i> Email Body Text</label>
+              <textarea id="bodyInput" rows="7" placeholder="Paste raw email body text here..."></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group flex-2">
+                <label for="urlsInput"><i class="fa-solid fa-link"></i> Explicit URLs (Optional, auto-extracted from body)</label>
+                <input type="text" id="urlsInput" placeholder="e.g. http://198.51.100.10/verify-account">
+              </div>
+              <div class="form-group flex-1">
+                <label for="attachmentInput"><i class="fa-solid fa-paperclip"></i> Attachment Name (Static filename)</label>
+                <input type="text" id="attachmentInput" placeholder="e.g. invoice.pdf.exe">
+              </div>
+            </div>
+
+            <!-- Optional File Upload -->
+            <div class="upload-dropzone" id="dropZone">
+              <input type="file" id="fileUploadInput" accept=".txt,.eml" style="display: none;">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Drag &amp; Drop <strong>.eml</strong> or <strong>.txt</strong> file here, or <button type="button" class="btn-link" onclick="document.getElementById('fileUploadInput').click()">Browse</button></p>
+              <span id="selectedFileName" class="selected-file-label"></span>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" id="btnSubmitAnalyze"><i class="fa-solid fa-shield-virus"></i> ANALYZE EMAIL THREAT</button>
+              <button type="button" class="btn-secondary" onclick="resetAnalyzerForm()"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Output / Results Column -->
+        <div class="card card-results" id="resultsContainer">
+          <div class="empty-state" id="emptyStatePlaceholder">
+            <div class="empty-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+            <h3>Ready for Defensive Inspection</h3>
+            <p>Paste email content on the left or select a safe demonstration preset to view explainable risk scoring, linguistic breakdown, static URL analysis, and SOC guidance.</p>
+          </div>
+
+          <div id="analysisResultContent" style="display: none;">
+            <!-- Top Score Banner -->
+            <div class="score-banner" id="scoreBanner">
+              <div class="score-dial">
+                <div class="score-number" id="riskScoreDisplay">0</div>
+                <div class="score-label">RISK SCORE / 100</div>
+              </div>
+              <div class="score-details">
+                <div class="classification-tag" id="classificationTag">SAFE</div>
+                <p class="threat-level-text" id="threatLevelDisplay">Defensive Triage Evaluation</p>
+                <div class="hybrid-metrics-pill" id="hybridMetricsPill">
+                  <span><i class="fa-solid fa-ruler-combined"></i> Rules: <strong id="ruleScoreVal">0</strong>/100</span>
+                  <span><i class="fa-solid fa-microchip"></i> ML Prob: <strong id="mlProbVal">0%</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Explainable "WHY?" Checklist -->
+            <div class="result-block">
+              <h3><i class="fa-solid fa-circle-question"></i> WHY WAS THIS SCORE ASSIGNED? (EXPLAINABILITY)</h3>
+              <div class="indicators-list" id="indicatorsList"></div>
+            </div>
+
+            <!-- Component Accordions -->
+            <div class="component-details-grid">
+              <!-- Sender Analysis Card -->
+              <div class="sub-card">
+                <h4><i class="fa-solid fa-user-shield"></i> Sender Analysis (<span id="senderScoreBadge">0/100</span>)</h4>
+                <ul class="sub-findings-list" id="senderFindingsList"></ul>
+              </div>
+
+              <!-- Attachment Analysis Card -->
+              <div class="sub-card">
+                <h4><i class="fa-solid fa-file-shield"></i> Attachment Analysis (<span id="attachmentScoreBadge">0/100</span>)</h4>
+                <ul class="sub-findings-list" id="attachmentFindingsList"></ul>
+              </div>
+            </div>
+
+            <!-- URL Static Analysis Card -->
+            <div class="result-block">
+              <h3><i class="fa-solid fa-link-slash"></i> STATIC URL ANALYSIS (ZERO-CLICK INSPECTION)</h3>
+              <div id="urlAnalysisList" class="url-analysis-container"></div>
+            </div>
+
+            <!-- Defensive Recommendations -->
+            <div class="result-block recommendations-block">
+              <h3><i class="fa-solid fa-triangle-exclamation"></i> RECOMMENDED ACTION &amp; SOC PROTOCOL</h3>
+              <ul class="recommendations-list" id="recommendationsList"></ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: DASHBOARD ANALYTICS ==================== -->
+    <section id="tab-dashboard" class="tab-content">
+      <!-- KPI Metric Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon icon-blue"><i class="fa-solid fa-envelope"></i></div>
+          <div class="kpi-data">
+            <span class="kpi-value" id="kpiTotal">0</span>
+            <span class="kpi-label">Total Emails Triaged</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon icon-red"><i class="fa-solid fa-biohazard"></i></div>
+          <div class="kpi-data">
+            <span class="kpi-value" id="kpiHigh">0</span>
+            <span class="kpi-label">Likely Phishing (High Risk)</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon icon-orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="kpi-data">
+            <span class="kpi-value" id="kpiSuspicious">0</span>
+            <span class="kpi-label">Suspicious Emails</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon icon-yellow"><i class="fa-solid fa-circle-exclamation"></i></div>
+          <div class="kpi-data">
+            <span class="kpi-value" id="kpiModerate">0</span>
+            <span class="kpi-label">Moderate Risk</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon icon-green"><i class="fa-solid fa-shield-heart"></i></div>
+          <div class="kpi-data">
+            <span class="kpi-value" id="kpiLow">0</span>
+            <span class="kpi-label">Low Risk / Safe</span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon icon-purple"><i class="fa-solid fa-gauge-high"></i></div>
+          <div class="kpi-data">
+            <span class="kpi-value" id="kpiAvgScore">0.0</span>
+            <span class="kpi-label">Average Risk Score</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-pie"></i> Classification Distribution</h3>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chartClassification"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-column"></i> Threat Risk Distribution</h3>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chartRiskDistribution"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card chart-span-2">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-fire"></i> Top Triggered Phishing Indicators</h3>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="chartIndicators"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: PHISHING AWARENESS HUB ==================== -->
+    <section id="tab-awareness" class="tab-content">
+      <div class="awareness-container">
+        
+        <div class="card awareness-intro">
+          <h2><i class="fa-solid fa-graduation-cap"></i> Phishing Awareness &amp; Social Engineering Defense</h2>
+          <p>
+            Phishing is the #1 initial access vector in modern enterprise security breaches.
+            Attackers leverage cognitive shortcuts, fear, urgency, and misplaced authority to deceive targets into parting with credentials or executing malicious payloads.
+          </p>
+        </div>
+
+        <!-- 10 Rules of Phishing Detection Grid -->
+        <h3 class="section-title"><i class="fa-solid fa-list-check"></i> 10 Red Flags to Spot Phishing Emails</h3>
+        <div class="awareness-grid">
+          <div class="awareness-card">
+            <div class="num-badge">01</div>
+            <h4>Sender Address Spoofing</h4>
+            <p>Do not trust the friendly display name. Check the domain after the "@". Look for typosquatting (e.g., <code>micros0ft.com</code> instead of <code>microsoft.com</code>).</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">02</div>
+            <h4>Artificial Urgency</h4>
+            <p>Phrases like "Act immediately", "Expires in 2 hours", or "Account lockout" are designed to create panic and bypass your rational critical thinking.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">03</div>
+            <h4>Raw IP or Masked Links</h4>
+            <p>Legitimate organizations rarely use raw IP addresses (e.g., <code>http://198.51.100.10</code>) or URL shorteners for official account verification.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">04</div>
+            <h4>HTTPS Does NOT Mean Safe</h4>
+            <p>HTTPS only encrypts data in transit. Threat actors frequently obtain free SSL/TLS certificates for malicious credential-harvesting websites.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">05</div>
+            <h4>Unsolicited Credential Requests</h4>
+            <p>Legitimate banks, universities, and IT departments will NEVER ask you to email or verify your password, PIN, or multi-factor code via an email link.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">06</div>
+            <h4>Dangerous / Double Extensions</h4>
+            <p>Be vigilant with attachments like <code>.exe</code>, <code>.scr</code>, <code>.vbs</code>, <code>.bat</code>, or disguised double extensions such as <code>invoice.pdf.exe</code>.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">07</div>
+            <h4>Generic Salutations</h4>
+            <p>Mass spearphishing often uses impersonal greetings like "Dear Customer", "Dear Member", or "Dear Valued Employee" instead of your actual name.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">08</div>
+            <h4>Unexpected Invoices / Wire Demands</h4>
+            <p>Fake invoices with urgent payment deadlines or CEO requests for discreet wire transfers or gift cards are classic social engineering hooks.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">09</div>
+            <h4>Unrealistic Rewards &amp; Prizes</h4>
+            <p>If you allegedly won an international lottery, raffle, or cash bonus you never entered, it is always a credential or advance-fee scam.</p>
+          </div>
+          <div class="awareness-card">
+            <div class="num-badge">10</div>
+            <h4>Verify Out-of-Band</h4>
+            <p>When in doubt, never reply or click links in the message. Call the sender directly using a known verified phone number or visit the official site directly.</p>
+          </div>
+        </div>
+
+        <!-- Interactive "Before You Click" Checklist -->
+        <div class="card checklist-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-clipboard-check"></i> Interactive "Before You Click" Security Checklist</h3>
+            <span class="card-tag">Self-Assessment Tool</span>
+          </div>
+          <p>Answer these 5 checks before deciding to interact with an email:</p>
+          <div class="interactive-checklist">
+            <label class="check-item">
+              <input type="checkbox" class="checklist-box" onchange="updateChecklistScore()">
+              <span>Did I verify the true sender domain (not just the display name)?</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" class="checklist-box" onchange="updateChecklistScore()">
+              <span>Was I expecting this email, invoice, or attachment?</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" class="checklist-box" onchange="updateChecklistScore()">
+              <span>Does the email avoid pressuring me with immediate panic or threats of account closure?</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" class="checklist-box" onchange="updateChecklistScore()">
+              <span>Did I check that links point to official corporate domains rather than raw IPs or strange extensions?</span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" class="checklist-box" onchange="updateChecklistScore()">
+              <span>Does the message refrain from asking for passwords, login verification, or banking details?</span>
+            </label>
+          </div>
+          <div class="checklist-result" id="checklistResult">
+            <strong>Checklist Status:</strong> Check all 5 safety boxes above to evaluate your email safety posture.
+          </div>
+        </div>
+
+        <!-- MITRE ATT&CK Framework Mapping -->
+        <div class="card mitre-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-network-wired"></i> MITRE ATT&amp;CK® Framework Defensive Mapping</h3>
+            <span class="card-tag">Tactic: Initial Access (TA0001)</span>
+          </div>
+          <div class="mitre-table-wrapper">
+            <table class="mitre-table">
+              <thead>
+                <tr>
+                  <th>Technique ID</th>
+                  <th>Technique Name</th>
+                  <th>Attack Mechanism</th>
+                  <th>SentinelPhish Defensive Detection</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>T1566.001</code></td>
+                  <td>Spearphishing Attachment</td>
+                  <td>Adversary sends emails with malicious files (executables, double-extensions, weaponized office macros) to execute code.</td>
+                  <td>Static extension analysis, double-extension detection (.pdf.exe), macro format alerts.</td>
+                </tr>
+                <tr>
+                  <td><code>T1566.002</code></td>
+                  <td>Spearphishing Link</td>
+                  <td>Adversary embeds hyperlinks directing victims to credential-harvesting portals or drive-by download sites.</td>
+                  <td>Lexical URL analysis, raw IP detection, URL shortener detection, credential keyword flags.</td>
+                </tr>
+                <tr>
+                  <td><code>T1566.003</code></td>
+                  <td>Spearphishing via Service</td>
+                  <td>Adversary leverages legitimate third-party services or spoofed cloud communications to deliver lures.</td>
+                  <td>Display name vs domain mismatch heuristics, brand impersonation detection.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: THREAT HISTORY LOG ==================== -->
+    <section id="tab-history" class="tab-content">
+      <div class="card history-card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-clock-rotate-left"></i> Security Audit Log &amp; Triage History</h2>
+          <button class="btn-refresh" onclick="loadHistoryLogs()"><i class="fa-solid fa-arrows-rotate"></i> Refresh Logs</button>
+        </div>
+
+        <!-- Filter and Search Bar -->
+        <div class="history-controls">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="historySearchInput" placeholder="Search by subject, domain, or sender..." onkeyup="filterHistoryDebounced()">
+          </div>
+          <div class="filter-group">
+            <label for="historyClassificationFilter">Classification:</label>
+            <select id="historyClassificationFilter" onchange="loadHistoryLogs()">
+              <option value="">All Tiers</option>
+              <option value="HIGH RISK / LIKELY PHISHING">High Risk / Likely Phishing</option>
+              <option value="SUSPICIOUS">Suspicious</option>
+              <option value="MODERATE RISK">Moderate Risk</option>
+              <option value="LOW RISK">Low Risk</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="historySortSelect">Sort:</label>
+            <select id="historySortSelect" onchange="loadHistoryLogs()">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="highest_risk">Highest Risk Score</option>
+              <option value="lowest_risk">Lowest Risk Score</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- History Table -->
+        <div class="table-responsive">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Timestamp</th>
+                <th>Sender Domain</th>
+                <th>Subject</th>
+                <th>Risk Score</th>
+                <th>Classification</th>
+                <th>Attachment</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <tr>
+                <td colspan="8" class="text-center">Loading threat audit logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal for Inspection of Past Analysis -->
+  <div class="modal" id="detailModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-shield-halved"></i> Threat Telemetry Inspection</h3>
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBodyContent">
+          Loading analysis telemetry...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>SentinelPhish Defensive Cybersecurity Platform &bull; Designed for Educational &amp; Defensive Analysis</p>
+    <p class="footer-note">All demonstrations utilize RFC-reserved safe domains (e.g. example.com, invalid.test) and documentation IP ranges. Zero network requests or real phishing.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
