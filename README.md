@@ -308,6 +308,6 @@ pytest tests/test_comprehensive_25.py -v
 
 ## 17. Author & Acknowledgments
 
-- **Author**: Cybersecurity Engineering Student
+- **Author**: **Abhishek Basu — Embedded Systems Student GitHub: [DevAbhay2003](https://github.com/DevAbhay2003?tab=repositories) · LinkedIn: [Abhishek Basu](https://www.linkedin.com/in/abhishek-basu-68b1b1342/)**
 - **Course**: Defensive Cybersecurity & Security Operations Capstone
 - **Project Repository**: `Phishing-Email-Detection-Awareness-Dashboard`
